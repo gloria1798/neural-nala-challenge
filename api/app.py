@@ -2,7 +2,6 @@
 import os
 import logging
 from flask import Flask, request, jsonify
-from PIL import ImageStat
 from analytics.src.data import FraudData
 from analytics.src.models import RandomForest
 import analytics.util as util

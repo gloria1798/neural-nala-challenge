@@ -2,7 +2,6 @@ import pandas as pd
 import numpy
 import string
 import sklearn.decomposition
-import matplotlib.pyplot as plt
 import math
 import statistics
 import sklearn
@@ -15,12 +14,8 @@ from sklearn.metrics import mean_squared_error, completeness_score
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn import tree
-import graphviz
-import pydot
-import pydotplus
 from sklearn import svm
 import os
-import seaborn as sns
 
 import time
 import sys
