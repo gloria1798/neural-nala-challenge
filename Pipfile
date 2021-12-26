@@ -5,6 +5,7 @@ verify_ssl = true
 
 [packages]
 scikit-learn = "*"
+flask = "*"
 pandas = "*"
 
 [requires]
