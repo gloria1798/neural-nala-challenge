@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy
 import string
-from sklearn.model_selection import train_test_split
 import sklearn.decomposition
 import matplotlib.pyplot as plt
 import math
@@ -23,6 +22,7 @@ from sklearn import svm
 import os
 import seaborn as sns
 
+import time
 import sys
 import json
 import multiprocessing
@@ -32,8 +32,8 @@ import logging
 # from mixpanel import Mixpanel
 # from dotenv import dotenv_values
 
-from analytics.src.data import DBManager
-from analytics.src.models import DBpreprocessing
+from analytics.src.data import FraudData
+from analytics.src.models import RandomForest
 
 # codeable.pem is generated in this dicrectory:
 # cd /home/serendipita/Documents/python/deployAppUbuntuAWS
@@ -46,12 +46,11 @@ def _import_class(module_and_clas_name: str) -> type:
     module = importlib.import_module(module_name)
     class_ = getattr(module, class_name)
     return class_
-
   
 def _setup_parser():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--data_class", type=str, default="TopicUserquote")
-    parser.add_argument("--model_class", type=str, default="FraudDetection")
+    parser.add_argument("--data_class", type=str, default="FraudData")
+    parser.add_argument("--model_class", type=str, default="RandomForest")
     temp_args, _ = parser.parse_known_args()
     data_class = _import_class(
         f"analytics.src.data.{temp_args.data_class}")
@@ -61,15 +60,6 @@ def _setup_parser():
     data_class.add_to_argparse(data_group)
     model_group = parser.add_argument_group("Model Args")
     model_class.add_to_argparse(model_group)
-
-    args = parser.parse_args()
-    start = str(
-        args.start_timestamp) if args.start_timestamp != 0 else "beginning"
-    end = str(args.end_timestamp) if args.end_timestamp != int(
-        sys.maxsize) else "now"
-    logging.basicConfig(filename=f'debug_{temp_args.data_class}_{start}_{end}.log', level=logging.DEBUG,
-                        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-    logging.info('Start project')
     return parser
 
 
@@ -80,22 +70,11 @@ def main():
         f"analytics.src.data.{args.data_class}")
     model_class = _import_class(
         f"analytics.src.models.{args.model_class}")
-    data = data_class(args)
+    data = data_class(args=args)    
     model = model_class(args=args)
-
-
-    
-    #logging.info(data_event_topic.info())
-    try:
-        while True:            
-            #list_data = data_event_topic.capture()
-            # if len(list_data) != 0:                
-            #     data_class.toMixpanel(list_data, mp, SECRET)                
-            # print(".")
-            # print(json.dumps(list_data, indent=4, sort_keys=True))
-    finally:
-        #data_event_topic.close()
-
+    train_X, val_X, train_y, val_y = data.data_after_split_and_preprocess()
+    model.train(train_X, train_y)
+    model.test(val_X, val_y)  
     return
 
 if __name__ == '__main__': 
